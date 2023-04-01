@@ -4,7 +4,7 @@ import ExpensesOutput from "../components/ExpensesOutput/ExpensesOutput";
 
 export default function RecentExpenses() {
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       <ExpensesOutput expensesPeriod={"last 7 days"} />
     </View>
   );
