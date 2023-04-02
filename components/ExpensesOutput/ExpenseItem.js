@@ -3,11 +3,15 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { GlobalStyles } from "../../constants/styles";
 import { getFormattedDate } from "../../util/date";
 
-function expensePressHandler() {
-  console.log("pressed");
-}
+// to be able to use navigation without being a screen
+import { useNavigation } from "@react-navigation/native";
 
-function ExpenseItem({ description, amount, date }) {
+export default function ExpenseItem({ id, description, amount, date }) {
+  const navigation = useNavigation();
+
+  function expensePressHandler() {
+    navigation.navigate("ManageExpense", { expenseId: id });
+  }
   return (
     <Pressable
       onPress={expensePressHandler}
@@ -27,8 +31,6 @@ function ExpenseItem({ description, amount, date }) {
     </Pressable>
   );
 }
-
-export default ExpenseItem;
 
 const styles = StyleSheet.create({
   expenseItem: {

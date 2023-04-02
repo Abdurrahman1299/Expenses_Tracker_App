@@ -12,6 +12,7 @@ export default function ExpensesList({ expenses }) {
       renderItem={renderExpenseItem}
       keyExtractor={(item) => item.id}
     />
+    
   );
 }
 
