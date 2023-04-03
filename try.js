@@ -5,19 +5,19 @@ const DUMMY_EXPENSES = [
     id: "e1",
     description: "A pair of shoes",
     amount: 59.99,
-    date: new Date("2023-04-01"),
+    date: new Date("2021-12-19"),
   },
   {
     id: "e2",
     description: "A pair of trousers",
     amount: 89.29,
-    date: new Date("2023-04-03"),
+    date: new Date("2022-01-05"),
   },
   {
     id: "e3",
     description: "Some bananas",
     amount: 5.99,
-    date: new Date("2023-12-01"),
+    date: new Date("2021-12-01"),
   },
   {
     id: "e4",
@@ -64,9 +64,9 @@ export const ExpensesContext = createContext({
   updateExpense: (id, { description, amount, date }) => {},
 });
 
-// reducer things ---------------------------------------
-function expensesReducer(state, action) {
-  switch (action.type) {
+// reducer function the logic container
+function reducer(state, action) {
+  switch (state.type) {
     case "ADD":
       const id = new Date().toString() + Math.random().toString();
       return [{ ...action.payload, id: id }, ...state];
@@ -83,16 +83,16 @@ function expensesReducer(state, action) {
       updatedExpenses[updatableExpenseIndex] = updatedItem;
       return updatedExpenses;
     case "DELETE":
-      return state.filter((expense) => expense.id !== action.payload);
+      return state.filter((expense) => expense.id !== action.id);
     default:
       return state;
   }
 }
-// reducer things ---------------------------------------
+// reducer function the logic container
 
 export default function ExpensesContextProvider({ children }) {
-  // reducer things ---------------------------------------
-  const [expensesState, dispatch] = useReducer(expensesReducer, DUMMY_EXPENSES);
+  const [state, dispatch] = useReducer(reducer, DUMMY_EXPENSES);
+
   function addExpense(expenseData) {
     dispatch({ type: "ADD", payload: expenseData });
   }
@@ -102,16 +102,6 @@ export default function ExpensesContextProvider({ children }) {
   function updateExpense(id, expenseData) {
     dispatch({ type: "UPDATE", payload: { id: id, data: expenseData } });
   }
-  // reducer things ---------------------------------------
-  const value = {
-    expenses: expensesState,
-    addExpense: addExpense,
-    deleteExpense: deleteExpense,
-    updateExpense: updateExpense,
-  };
-  return (
-    <ExpensesContext.Provider value={value}>
-      {children}
-    </ExpensesContext.Provider>
-  );
+
+  return <ExpensesContext.Provider>{children}</ExpensesContext.Provider>;
 }
