@@ -10,6 +10,7 @@ export default function AllExpenses() {
       <ExpensesOutput
         expensesPeriod={"total"}
         expenses={expensesCtx.expenses}
+        fallbackText={"No expenses to show!"}
       />
     </View>
   );
