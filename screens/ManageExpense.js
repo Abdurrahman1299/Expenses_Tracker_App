@@ -1,17 +1,25 @@
-import { useContext, useLayoutEffect } from "react";
+import { useContext, useLayoutEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 import ExpenseForm from "../components/ManageExpense/ExpenseForm";
 import IconButton from "../components/UI/IconButton";
 import { GlobalStyles } from "../constants/styles";
 import { ExpensesContext } from "../store/expenses-context";
-import { storeExpense } from "../util/http";
+import { storeExpense, updateExpense, deleteExpense } from "../util/http";
+import LoadingOverlay from "../components/UI/LoadingOverlay";
+import ErrorOverlay from "../components/UI/ErrorOverlay";
 
 function ManageExpense({ route, navigation }) {
   const expensesCtx = useContext(ExpensesContext);
 
   const editedExpenseId = route.params?.expenseId;
   const isEditing = !!editedExpenseId;
+
+  // state to make spinner
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // state to make error
+  const [error, setError] = useState(null);
 
   const selectedExpense = expensesCtx.expenses.find(
     (expense) => expense.id === editedExpenseId
@@ -24,24 +32,56 @@ function ManageExpense({ route, navigation }) {
     });
   }, [navigation, isEditing]);
 
-  function deleteExpenseHandler() {
-    expensesCtx.deleteExpense(editedExpenseId);
-    navigation.goBack();
+  // deleting an expense locally and from server
+  async function deleteExpenseHandler() {
+    setIsSubmitting(true);
+    try {
+      await deleteExpense(editedExpenseId);
+      expensesCtx.deleteExpense(editedExpenseId);
+      navigation.goBack();
+    } catch (error) {
+      setError("Could not delete - try later!");
+      setIsSubmitting(false);
+    }
   }
 
+  // button of canceling updating or adding processes
   function cancelHandler() {
     navigation.goBack();
   }
 
-  // used to make the adding or updating a specific expense
+  // make the adding or updating a specific expense
   async function confirmHandler(expenseData) {
-    if (isEditing) {
-      expensesCtx.updateExpense(editedExpenseId, expenseData);
-    } else {
-      const id = await storeExpense(expenseData);
-      expensesCtx.addExpense({ ...expenseData, id: id });
+    setIsSubmitting(true);
+    try {
+      if (isEditing) {
+        expensesCtx.updateExpense(editedExpenseId, expenseData);
+        // we are awaiting so that we can go back only after the request is done
+        await updateExpense(editedExpenseId, expenseData);
+      } else {
+        const id = await storeExpense(expenseData);
+        expensesCtx.addExpense({ ...expenseData, id: id });
+      }
+      navigation.goBack();
+    } catch (error) {
+      setError("Could not save data - try later!");
+      setIsSubmitting(false);
     }
-    navigation.goBack();
+  }
+
+  // setting error 'null' when pressing error message button
+  function errorHandler() {
+    setError(null);
+  }
+
+  // show error message if any while deleting
+  if (error && !isSubmitting) {
+    return <ErrorOverlay message={error} onConfirm={errorHandler} />;
+  }
+
+  // show spinnig wheel while sending data to server
+  if (isSubmitting) {
+    return <LoadingOverlay />;
   }
 
   return (
